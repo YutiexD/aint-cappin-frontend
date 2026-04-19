@@ -1,5 +1,6 @@
-import { useRef, useState, useCallback, useEffect } from 'react'
+import { useRef, useState } from 'react'
 import type { ChangeEvent } from 'react'
+import { LeverSwitch } from './lever-switch'
 
 type FaxState = 'idle' | 'ready' | 'pulling' | 'feeding' | 'processing' | 'analyzing'
 
@@ -10,12 +11,7 @@ interface FaxMachineProps {
 
 export default function FaxMachine({ onAnalysisStart, onFileSelected }: FaxMachineProps) {
   const [state, setState] = useState<FaxState>('idle')
-  const [leverAngle, setLeverAngle] = useState(0)
   const [fileName, setFileName] = useState<string | null>(null)
-  const [hoverLever, setHoverLever] = useState(false)
-  const leverRef = useRef<HTMLDivElement>(null)
-  const isDraggingLever = useRef(false)
-  const startY = useRef(0)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
@@ -27,64 +23,21 @@ export default function FaxMachine({ onAnalysisStart, onFileSelected }: FaxMachi
     }
   }
 
-  const handleLeverStart = useCallback((clientY: number) => {
-    if (state !== 'ready') return
-    isDraggingLever.current = true
-    startY.current = clientY
-  }, [state])
+  const handleLeverToggle = (checked: boolean) => {
+    if (!checked || state !== 'ready') return
 
-  const handleLeverMove = useCallback((clientY: number) => {
-    if (!isDraggingLever.current) return
-    const delta = clientY - startY.current
-    const angle = Math.max(0, Math.min(55, delta * 0.6))
-    setLeverAngle(angle)
-  }, [])
+    setState('pulling')
 
-  const handleLeverEnd = useCallback(() => {
-    if (!isDraggingLever.current) return
-    isDraggingLever.current = false
-
-    if (leverAngle > 40) {
-      setLeverAngle(55)
-      setState('pulling')
-
+    setTimeout(() => {
+      setState('feeding')
       setTimeout(() => {
-        setState('feeding')
+        setState('processing')
         setTimeout(() => {
-          setState('processing')
-          setTimeout(() => {
-            setState('analyzing')
-            onAnalysisStart()
-          }, 2200)
-        }, 2000)
-      }, 600)
-    } else {
-      setLeverAngle(0)
-    }
-  }, [leverAngle, onAnalysisStart])
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => handleLeverMove(e.clientY)
-    const onMouseUp = () => handleLeverEnd()
-    const onTouchMove = (e: TouchEvent) => handleLeverMove(e.touches[0].clientY)
-    const onTouchEnd = () => handleLeverEnd()
-
-    window.addEventListener('mousemove', onMouseMove)
-    window.addEventListener('mouseup', onMouseUp)
-    window.addEventListener('touchmove', onTouchMove)
-    window.addEventListener('touchend', onTouchEnd)
-
-    return () => {
-      window.removeEventListener('mousemove', onMouseMove)
-      window.removeEventListener('mouseup', onMouseUp)
-      window.removeEventListener('touchmove', onTouchMove)
-      window.removeEventListener('touchend', onTouchEnd)
-    }
-  }, [handleLeverMove, handleLeverEnd])
-
-  const leverSpringStyle = {
-    transform: `rotate(${leverAngle}deg)`,
-    transition: isDraggingLever.current ? 'none' : 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          setState('analyzing')
+          onAnalysisStart()
+        }, 2200)
+      }, 2000)
+    }, 600)
   }
 
   const isActive = state === 'pulling' || state === 'feeding' || state === 'processing'
@@ -122,7 +75,7 @@ export default function FaxMachine({ onAnalysisStart, onFileSelected }: FaxMachi
           </div>
 
           {/* Paper document */}
-          <div className={`fax-paper ${state === 'ready' ? 'inserted' : ''} ${state === 'feeding' ? 'feeding-in' : ''} ${state === 'processing' || state === 'analyzing' ? 'consumed' : ''}`}>
+          <div className={`fax-paper ${state === 'ready' || state === 'pulling' ? 'inserted' : ''} ${state === 'feeding' ? 'feeding-in' : ''} ${state === 'processing' || state === 'analyzing' ? 'consumed' : ''}`}>
             <div className="fax-paper-content">
               <div className="paper-lines">
                 {Array.from({ length: 12 }).map((_, i) => (
@@ -171,7 +124,7 @@ export default function FaxMachine({ onAnalysisStart, onFileSelected }: FaxMachi
             <div className="fax-display-screen">
               <span className="fax-display-text">
                 {state === 'idle' && '▸ AWAITING INPUT'}
-                {state === 'ready' && '▸ PULL LEVER TO SCAN'}
+                {state === 'ready' && '▸ FLIP LEVER TO SCAN'}
                 {state === 'pulling' && '▸ INITIATING...'}
                 {state === 'feeding' && '▸ SCANNING DOCUMENT'}
                 {state === 'processing' && '▸ PROCESSING DATA...'}
@@ -190,23 +143,15 @@ export default function FaxMachine({ onAnalysisStart, onFileSelected }: FaxMachi
           )}
         </div>
 
-        {/* The lever */}
+        {/* The lever switch */}
         <div className="fax-lever-assembly">
-          <div className="fax-lever-pivot" />
-          <div
-            ref={leverRef}
-            className={`fax-lever ${state === 'ready' ? 'interactive' : ''} ${hoverLever ? 'hovered' : ''}`}
-            style={leverSpringStyle}
-            onMouseDown={(e) => handleLeverStart(e.clientY)}
-            onTouchStart={(e) => handleLeverStart(e.touches[0].clientY)}
-            onMouseEnter={() => setHoverLever(true)}
-            onMouseLeave={() => setHoverLever(false)}
-          >
-            <div className="fax-lever-shaft" />
-            <div className="fax-lever-handle">
-              {state === 'ready' && <span className="lever-label">PULL</span>}
-            </div>
-          </div>
+          <LeverSwitch
+            disabled={state !== 'ready'}
+            onToggle={handleLeverToggle}
+          />
+          <span className="lever-switch-label">
+            {state === 'ready' ? 'SCAN' : state === 'idle' ? 'LOCKED' : 'ACTIVE'}
+          </span>
         </div>
       </div>
 

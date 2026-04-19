@@ -173,31 +173,43 @@
 .fax-paper {
   position: absolute;
   left: 50%;
-  top: -120px;
   width: 70%;
-  height: 150px;
+  height: 140px;
+  top: -122px;
   transform: translateX(-50%) translateY(20px);
   opacity: 0;
-  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  clip-path: inset(0 0 0 0);
+  transition:
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.4s ease,
+    clip-path 0.4s ease;
   pointer-events: none;
   z-index: 2;
 }
 
+/* Paper appears sticking out above the slot */
 .fax-paper.inserted {
   transform: translateX(-50%) translateY(0);
   opacity: 1;
+  clip-path: inset(0 0 0 0);
 }
 
+/* Paper shrinks from the bottom — bottom edge rises up into the slot */
 .fax-paper.feeding-in {
-  transform: translateX(-50%) translateY(90px);
-  opacity: 0.6;
-  transition: all 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  clip-path: inset(100% 0 0 0);
+  transition:
+    clip-path 1.8s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease 1.6s;
 }
 
+/* Fully consumed — gone, no re-pop */
 .fax-paper.consumed {
-  transform: translateX(-50%) translateY(140px);
+  transform: translateX(-50%) translateY(0);
   opacity: 0;
-  transition: all 0.4s ease;
+  clip-path: inset(100% 0 0 0);
+  transition: none;
 }
 
 .fax-paper-content {
@@ -207,7 +219,7 @@
   border-radius: 3px 3px 0 0;
   padding: 14px 18px;
   box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 -4px 16px rgba(0, 0, 0, 0.2),
     -2px 0 8px rgba(0, 0, 0, 0.1),
     2px 0 8px rgba(0, 0, 0, 0.1);
 }
@@ -280,7 +292,10 @@
 /* ===== MACHINE BODY DETAILS ===== */
 .fax-body {
   position: relative;
+  z-index: 3;
   padding: 16px 22px 22px;
+  background: linear-gradient(180deg, #13151d 0%, #0e1017 100%);
+  border-radius: 0 0 14px 14px;
 }
 
 .fax-body-texture {
@@ -374,86 +389,37 @@
   animation: internalBlink 0.6s ease-in-out infinite;
 }
 
-/* ===== LEVER ===== */
+/* ===== LEVER SWITCH POSITION ===== */
 .fax-lever-assembly {
   position: absolute;
-  right: -48px;
+  right: -72px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
-}
-
-.fax-lever-pivot {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 16px;
-  height: 16px;
-  background: radial-gradient(circle, #4a4d58 30%, #2a2d38 100%);
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-  z-index: 2;
-}
-
-.fax-lever {
-  transform-origin: 50% 0;
-  cursor: default;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.fax-lever.interactive {
-  cursor: grab;
-}
-
-.fax-lever.interactive:active {
-  cursor: grabbing;
-}
-
-.fax-lever.interactive.hovered .fax-lever-handle {
-  box-shadow:
-    0 4px 16px rgba(59, 130, 246, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.fax-lever.interactive.hovered .fax-lever-shaft {
-  background: linear-gradient(180deg, #3a3d48, #4a4d58);
-}
-
-.fax-lever-shaft {
-  width: 8px;
-  height: 80px;
-  margin: 0 auto;
-  background: linear-gradient(180deg, #2a2d38, #3a3d48);
-  border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.3);
-  transition: background 0.3s ease;
-}
-
-.fax-lever-handle {
-  position: relative;
-  width: 36px;
-  height: 36px;
-  margin: -2px auto 0;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.15);
-  box-shadow:
-    0 4px 12px rgba(59, 130, 246, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  transition: box-shadow 0.3s ease;
+  gap: 6px;
 }
 
-.lever-label {
-  font: 800 0.42rem/1 'Inter', Arial, sans-serif;
-  color: white;
-  letter-spacing: 0.1em;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+.lever-switch-label {
+  font: 700 0.52rem/1 'Inter', Arial, sans-serif;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+  text-align: center;
+  transition: color 0.3s ease;
+}
+
+.fax-machine.ready .lever-switch-label {
+  color: rgba(131, 216, 255, 0.7);
+  text-shadow: 0 0 8px rgba(131, 216, 255, 0.2);
+}
+
+.fax-machine.pulling .lever-switch-label,
+.fax-machine.feeding .lever-switch-label,
+.fax-machine.processing .lever-switch-label {
+  color: rgba(34, 197, 94, 0.6);
 }
 
 /* ===== VIBRATION OVERLAY ===== */
@@ -530,13 +496,7 @@
     width: clamp(280px, 85vw, 380px);
   }
   .fax-lever-assembly {
-    right: -38px;
-  }
-  .fax-lever-shaft {
-    height: 60px;
-  }
-  .fax-lever-handle {
-    width: 30px;
-    height: 30px;
+    right: -58px;
   }
 }
+

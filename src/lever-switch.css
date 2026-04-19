@@ -1,0 +1,191 @@
+/* ===== LEVER SWITCH ===== */
+.toggle-container {
+  position: relative;
+  width: 64px;
+  height: 148px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.toggle-container.toggle-disabled {
+  opacity: 0.35;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* Hidden checkbox */
+.toggle-input {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ===== BASE (top — the mount/socket) ===== */
+.toggle-base {
+  position: relative;
+  width: 54px;
+  height: 28px;
+  background: linear-gradient(180deg, #12141c 0%, #1a1d28 100%);
+  border-radius: 10px 10px 6px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  z-index: 3;
+  overflow: hidden;
+}
+
+.toggle-base-inside {
+  position: absolute;
+  inset: 4px 6px;
+  background: linear-gradient(180deg, #0c0e16 0%, #080a10 100%);
+  border-radius: 3px;
+  box-shadow: inset 0 -2px 4px rgba(0, 0, 0, 0.5);
+  transition: background 0.4s ease, box-shadow 0.4s ease;
+}
+
+/* Checked base — green glow */
+.toggle-input:checked ~ .toggle-base .toggle-base-inside {
+  background: linear-gradient(180deg, #0d2018 0%, #0a1a12 100%);
+  box-shadow:
+    inset 0 -2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 0 12px rgba(34, 197, 94, 0.15);
+}
+
+.toggle-input:checked ~ .toggle-base {
+  border-color: rgba(34, 197, 94, 0.15);
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    0 0 16px rgba(34, 197, 94, 0.1),
+    inset 0 -2px 6px rgba(0, 0, 0, 0.4);
+}
+
+/* ===== HANDLE WRAPPER (hangs below the base) ===== */
+.toggle-handle-wrapper {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: -6px;
+  transform-origin: center top;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* DEFAULT: lever is UP (tilted back toward viewer) */
+.toggle-handle-wrapper {
+  transform: rotate(-45deg);
+}
+
+/* PULLED: lever swings DOWN */
+.toggle-input:checked ~ .toggle-handle-wrapper {
+  transform: rotate(0deg) translateY(4px);
+}
+
+.toggle-handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ===== BAR (connects to base, hangs down) ===== */
+.toggle-handle-bar-wrapper {
+  display: flex;
+  justify-content: center;
+  order: 1;
+}
+
+.toggle-handle-bar {
+  width: 10px;
+  height: 60px;
+  background: linear-gradient(180deg, #3a3e4c 0%, #2a2d3a 40%, #22252f 100%);
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow:
+    2px 2px 6px rgba(0, 0, 0, 0.35),
+    inset 1px 0 0 rgba(255, 255, 255, 0.04);
+  transition: background 0.4s ease;
+  position: relative;
+}
+
+/* Metallic highlight */
+.toggle-handle-bar::before {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 3px;
+  width: 2px;
+  height: calc(100% - 12px);
+  background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+  border-radius: 1px;
+}
+
+/* Checked bar — green tint */
+.toggle-input:checked ~ .toggle-handle-wrapper .toggle-handle-bar {
+  background: linear-gradient(180deg, #243a2e 0%, #1a2e24 40%, #162820 100%);
+  border-color: rgba(34, 197, 94, 0.1);
+}
+
+/* ===== KNOB (at the bottom of the lever arm) ===== */
+.toggle-handle-knob {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 60%, #1d4ed8 100%);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 4px 16px rgba(59, 130, 246, 0.25),
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+  transition:
+    box-shadow 0.4s ease,
+    background 0.4s ease,
+    transform 0.3s ease;
+  cursor: grab;
+  position: relative;
+  order: 2;
+  margin-top: -2px;
+}
+
+.toggle-handle-knob::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.05) 70%);
+}
+
+.toggle-handle-knob:hover {
+  box-shadow:
+    0 4px 24px rgba(59, 130, 246, 0.45),
+    0 2px 8px rgba(0, 0, 0, 0.5),
+    inset 0 2px 4px rgba(255, 255, 255, 0.25),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  transform: scale(1.06);
+}
+
+.toggle-handle-knob:active {
+  cursor: grabbing;
+  transform: scale(0.96);
+}
+
+/* Checked knob — green glow */
+.toggle-input:checked ~ .toggle-handle-wrapper .toggle-handle-knob {
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 60%, #15803d 100%);
+  border-color: rgba(134, 239, 172, 0.25);
+  box-shadow:
+    0 4px 20px rgba(34, 197, 94, 0.4),
+    0 0 40px rgba(34, 197, 94, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
